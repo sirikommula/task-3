@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Responsive Site with Quiz & API</title>
+  <style>
+    :root {
+      --color-primary: #377DFF;
+      --color-secondary: #F3F6FD;
+      --color-accent: #FF7F50;
+      --color-bg: #ffffff;
+      --color-text: #333333;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --border-radius: 10px;
+      --transition-speed: 0.3s;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      background-color: var(--color-secondary);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: var(--color-primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    nav {
+      background-color: var(--color-bg);
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 0.75rem 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--border-radius);
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+    nav a:hover, nav a:focus {
+      background-color: var(--color-primary);
+      color: white;
+      outline: none;
+    }
+    main {
+      flex-grow: 1;
+      max-width: 900px;
+      margin: 2rem auto 3rem;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    section {
+      background-color: var(--color-bg);
+      padding: 1.8rem 2rem;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 15px rgb(0 0 0 / 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      transition: box-shadow 0.3s ease;
+    }
+    section:hover {
+      box-shadow: 0 8px 25px rgb(0 0 0 / 0.1);
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: var(--color-primary);
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+    /* Interactive Quiz Styles */
+    #quiz-container {
+      display: flex;
+      flex-direction: column;
+    }
+    #question {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .quiz-option {
+      background-color: var(--color-secondary);
+      border: 2px solid transparent;
+      border-radius: var(--border-radius);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.7rem;
+      cursor: pointer;
+      transition: background-color var(--transition-speed), border-color var(--transition-speed);
+      user-select: none;
+    }
+    .quiz-option:hover {
+      background-color: var(--color-primary);
+      color: white;
+    }
+    .quiz-option.selected {
+      border-color: var(--color-accent);
+      background-color: var(--color-accent);
+      color: white;
+      cursor: default;
+    }
+    .quiz-option.correct {
+      border-color: limegreen;
+      background-color: limegreen;
+      color: white;
+      cursor: default;
+    }
+    .quiz-option.incorrect {
+      border-color: #ff4040;
+      background-color: #ff4040;
+      color: white;
+      cursor: default;
+    }
+    #submit-btn {
+      margin-top: 1rem;
+      background-color: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 0.6rem 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    #submit-btn:disabled {
+      background-color: #aac8ff;
+      cursor: not-allowed;
+    }
+    #quiz-result {
+      margin-top: 1rem;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--color-primary);
+    }
+    /* Joke fetcher styles */
+    #joke-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 1.1rem;
+    }
+    #joke-text {
+      font-style: italic;
+      margin-bottom: 1.5rem;
+      min-height: 80px;
+      text-align: center;
+    }
+    #joke-btn {
+      background-color: var(--color-accent);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 0.6rem 1.4rem;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+      font-size: 1.1rem;
+    }
+    #joke-btn:hover, #joke-btn:focus {
+      background-color: #ff5d3a;
+      outline: none;
+    }
+    /* Responsive adjustments */
+    @media (max-width: 799px) {
+      main {
+        grid-template-columns: 1fr;
+        margin: 1rem auto 2rem;
+        padding: 0 1rem;
+      }
+      nav {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+    }
+    @media (max-width: 479px) {
+      body {
+        font-size: 14px;
+      }
+      header {
+        font-size: 1.5rem;
+      }
+      #submit-btn, #joke-btn {
+        width: 100%;
+      }
+      nav {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Interactive Responsive Site
+  </header>
+  <nav>
+    <a href="#quiz-section" tabindex="0">Quiz</a>
+    <a href="#joke-section" tabindex="0">Jokes</a>
+  </nav>
+  <main>
+    <!-- Quiz Section -->
+    <section id="quiz-section" tabindex="0" aria-label="Quiz Section">
+      <h2>Interactive Quiz</h2>
+      <div id="quiz-container" aria-live="polite" aria-relevant="additions removals">
+        <div id="question">Loading question...</div>
+        <div id="options-container"></div>
+        <button id="submit-btn" disabled aria-disabled="true" aria-label="Submit answer button">Submit</button>
+        <div id="quiz-result" role="alert" aria-live="assertive"></div>
+      </div>
+    </section>
+    <!-- Joke Section -->
+    <section id="joke-section" tabindex="0" aria-label="Joke Fetch Section">
+      <h2>Fetch a Random Joke</h2>
+      <div id="joke-container">
+        <div id="joke-text">Click the button to fetch a hilarious joke!</div>
+        <button id="joke-btn" aria-label="Fetch a new joke">Get Joke</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Quiz Data & Logic
+    const quizData = [
+      {
+        question: "What is the capital of France?",
+        options: ["Berlin", "London", "Paris", "Madrid"],
+        answer: 2
+      },
+      {
+        question: "Which language runs in a web browser?",
+        options: ["Java", "C", "Python", "JavaScript"],
+        answer: 3
+      },
+      {
+        question: "What does CSS stand for?",
+        options: [
+          "Creative Style Sheets",
+          "Cascading Style Sheets",
+          "Computer Style Sheets",
+          "Colorful Style Sheets"
+        ],
+        answer: 1
+      },
+      {
+        question: "Which HTML element do we put the JavaScript in?",
+        options: ["<link>", "<script>", "<js>", "<style>"],
+        answer: 1
+      },
+      {
+        question: "Inside which HTML element do we put the CSS?",
+        options: ["<style>", "<css>", "<script>", "<head>"],
+        answer: 0
+      }
+    ];
+
+    const questionEl = document.getElementById('question');
+    const optionsContainer = document.getElementById('options-container');
+    const submitBtn = document.getElementById('submit-btn');
+    const resultEl = document.getElementById('quiz-result');
+
+    let currentQuestion = 0;
+    let selectedOption = null;
+    let score = 0;
+
+    function loadQuestion() {
+      const q = quizData[currentQuestion];
+      questionEl.textContent = `Q${currentQuestion + 1}: ${q.question}`;
+
+      optionsContainer.innerHTML = '';
+      selectedOption = null;
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-disabled', 'true');
+      resultEl.textContent = '';
+
+      q.options.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        optionDiv.tabIndex = 0;
+        optionDiv.setAttribute('role', 'button');
+        optionDiv.setAttribute('aria-pressed', 'false');
+        optionDiv.textContent = option;
+        optionDiv.addEventListener('click', () => {
+          selectOption(index, optionDiv);
+        });
+        optionDiv.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectOption(index, optionDiv);
+          }
+        });
+        optionsContainer.appendChild(optionDiv);
+      });
+    }
+
+    function selectOption(index, optionDiv) {
+      // clear previous selection
+      Array.from(optionsContainer.children).forEach(child => {
+        child.classList.remove('selected');
+        child.setAttribute('aria-pressed', 'false');
+      });
+      optionDiv.classList.add('selected');
+      optionDiv.setAttribute('aria-pressed', 'true');
+      selectedOption = index;
+      submitBtn.disabled = false;
+      submitBtn.removeAttribute('aria-disabled');
+    }
+
+    submitBtn.addEventListener('click', () => {
+      if (selectedOption === null) return;
+
+      const correctAnswer = quizData[currentQuestion].answer;
+      // Mark options correctly/incorrectly
+      Array.from(optionsContainer.children).forEach((child, idx) => {
+        child.classList.remove('selected');
+        child.removeAttribute('aria-pressed');
+        if(idx === correctAnswer) {
+          child.classList.add('correct');
+        } else if(idx === selectedOption && selectedOption !== correctAnswer) {
+          child.classList.add('incorrect');
+        }
+        // Disable pointer events after submission
+        child.style.pointerEvents = 'none';
+      });
+
+      // update score and show result text
+      if(selectedOption === correctAnswer) {
+        score++;
+        resultEl.textContent = "Correct!";
+        resultEl.style.color = "green";
+      } else {
+        resultEl.textContent = `Incorrect! The correct answer is: "${quizData[currentQuestion].options[correctAnswer]}"`;
+        resultEl.style.color = "red";
+      }
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-disabled', 'true');
+
+      // Load next question or finish
+      currentQuestion++;
+      if(currentQuestion < quizData.length) {
+        submitBtn.textContent = "Next Question";
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-disabled');
+        submitBtn.addEventListener('click', handleNextQuestion, { once: true });
+      } else {
+        submitBtn.textContent = "Restart Quiz";
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-disabled');
+        submitBtn.addEventListener('click', restartQuiz, { once: true });
+        resultEl.textContent += ` You scored ${score} out of ${quizData.length}.`;
+      }
+    });
+
+    function handleNextQuestion() {
+      loadQuestion();
+      submitBtn.textContent = "Submit";
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-disabled', 'true');
+      resultEl.textContent = '';
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      loadQuestion();
+      submitBtn.textContent = "Submit";
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-disabled', 'true');
+      resultEl.textContent = '';
+    }
+
+    // Initial quiz load
+    loadQuestion();
+
+    // Joke Fetcher logic
+    const jokeText = document.getElementById('joke-text');
+    const jokeBtn = document.getElementById('joke-btn');
+
+    async function fetchJoke() {
+      jokeBtn.disabled = true;
+      jokeBtn.textContent = "Loading...";
+      jokeText.textContent = "Fetching a fun joke for you...";
+      try {
+        const response = await fetch('https://icanhazdadjoke.com/', {
+          headers: {
+            Accept: 'application/json'
+          }
+        });
+        if(!response.ok) {
+          throw new Error('Network response not ok');
+        }
+        const data = await response.json();
+        jokeText.textContent = `"${data.joke}"`;
+      } catch(error) {
+        jokeText.textContent = "Oops! Could not fetch joke right now 😞 Try again later.";
+      } finally {
+        jokeBtn.disabled = false;
+        jokeBtn.textContent = "Get Joke";
+      }
+    }
+
+    jokeBtn.addEventListener('click', fetchJoke);
+  </script>
+</body>
+</html>
+
